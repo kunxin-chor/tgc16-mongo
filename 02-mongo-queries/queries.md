@@ -273,6 +273,8 @@ db.listingsAndReviews.find({
     }
 },{
     'name':1,
-    'amenities':1
+    'amenities': {
+        $slice:[5,1]
+    }
 }).pretty()
 ```
