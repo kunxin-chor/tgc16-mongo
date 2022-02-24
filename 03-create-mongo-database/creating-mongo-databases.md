@@ -75,3 +75,9 @@ db.animals.updateOne({
     }
 })
 ```
+
+## Delete an animal
+```
+db.animals.deleteOne({
+    '_id':ObjectId('62172cfc5e4cc3d0ca8b8409')
+});
