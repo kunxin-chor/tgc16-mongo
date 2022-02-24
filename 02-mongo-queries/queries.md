@@ -114,6 +114,7 @@ db.listingsAndReviews.find({
 ```
 
 example: find all listings in Brazil that has less than 4 bedrooms
+```
 db.listingsAndReviews.find({
     'address.country':'Brazil',
     'bedrooms': {
@@ -209,5 +210,69 @@ db.listingsAndReviews.find({
     'name':1,
     'address.country':1,
     'bedrooms':1
+}).pretty()
+```
+
+## Find all listings that has been reviewd by Leslie
+In other words, we want to shortlist documents by a field in one of their
+embedded objects.
+
+```
+db.listingsAndReviews.find({
+    'reviews':{
+        '$elemMatch':{
+            'reviewer_name':'Octavio'
+        }
+    }
+},{
+    'name':1,
+    'reviews.$':1
+}).pretty()
+```
+
+## Match by date
+The date in the ISO format: YYYY-MM-DD and we need to wrap it with a function.
+Find all listings that have been reviewed before 2019:
+```
+db.listingsAndReviews.find({
+    'first_review': {
+        '$lte':ISODate("2018-12-31")
+    }
+},{
+    'name':1,
+    'first_review':1
+}).pretty()
+```
+
+## Find by string pattern (i.e regular expressions)
+Find all the listings where the name includes the word 'spacious'
+Note: the `i` for the `$options` means case insensitive comparison
+```
+db.listingsAndReviews.find({
+    'name': {
+            '$regex':'Spacious', '$options':'i'
+        }
+    },{
+        'name':1
+    }
+)
+```
+
+## Counting results
+Count all the number of listings:
+```
+db.listingsAndReviews.find().count()
+```
+## We find all listings that have at least 6 amenities
+To find if a listing have 6 or more amenities, we'll check if the 6th element of
+the amenities:
+```
+db.listingsAndReviews.find({
+    'amenities.5':{
+        '$exists':true
+    }
+},{
+    'name':1,
+    'amenities':1
 }).pretty()
 ```
