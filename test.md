@@ -37,6 +37,7 @@ db.animals.updateOne({
     $set: {
         'checkups.$[doctor].diagnosis':'redacted'
     },
+},
     {
         arrayFilters:[ 
             {
