@@ -81,3 +81,147 @@ db.animals.updateOne({
 db.animals.deleteOne({
     '_id':ObjectId('62172cfc5e4cc3d0ca8b8409')
 });
+```
+# How to work with embedded documents
+Keep track of checkups that each animal had:
+```
+db.animals.insertOne({
+    'name':'Cookie',
+    'age':3,
+    'breed':'Lab Retriver',
+    'type':'Dog',
+    'checkups':[]
+})
+
+db.animals.insertOne({
+    'name':'Frenzy',
+    'age':1,
+    'breed':'Wild cat',
+    'type':'Cat',
+    'checkups':[
+        {
+            'id':ObjectId(),
+            'name':'Dr Chua',
+            'diagnosis':'Heartworms',
+            'treatment':'Steriods'
+        }
+    ]
+});
+```
+
+## Add a new sub-document to an array
+```
+db.animals.updateOne({
+    '_id':ObjectId('62173de1c77fb2cf36a41a38')
+},{
+    '$push':{
+        'checkups':{
+            'id':ObjectId(),
+            'name':'Dr Tan',
+            'diagnosis':'Diabetes',
+            'treatment':'Medication'
+        }
+    }
+})
+```
+
+We can use $push on documents that don't have the array to begin with
+
+```
+db.animals.updateOne({
+    '_id':ObjectId("62172c5d5e4cc3d0ca8b8407")
+},{
+    $push:{
+        'checkups':{
+            'id':ObjectId(),
+            'name':'Dr Chua',
+            'diagnosis':'Flu',
+            'treatment':'Pills'
+        }
+    }
+})
+```
+## Remove sub-document from array
+Remove the checkup from Fluffy the golden retriever with the id of 
+
+```
+db.animals.updateOne({
+    "_id":ObjectId("62172c5d5e4cc3d0ca8b8407"),
+},{
+    '$pull':{
+        'checkups':{
+            'id':ObjectId("62173fe1c77fb2cf36a41a3c")
+        }
+    }
+})
+```
+
+## Update one of the checkups' name to Dr. Su 
+```
+db.animals.updateOne({
+    '_id':ObjectId("62173df8c77fb2cf36a41a3a"),
+    'checkups':{
+        $elemMatch:{
+            'id':ObjectId("62173df8c77fb2cf36a41a39")
+        }
+    }
+},{
+    '$set': {
+        'checkups.$.name':'Dr Su'
+    }
+})
+```
+Alternate method:
+
+```
+db.animals.updateOne({
+    '_id':ObjectId('62173df8c77fb2cf36a41a3a'),
+    'checkups.id':ObjectId("62173df8c77fb2cf36a41a39")
+}, {
+    $set:{
+        'checkups.$.name':'Dr Zhao'
+    }
+})
+```
+
+## Update the fields of all sub documents that matches a critera
+
+```
+db.animals.updateOne(
+    {
+        '_id':ObjectId("62172c5d5e4cc3d0ca8b8407")
+    },
+    {
+        $set:{
+            'checkups.$[eachCheckup].diagnosis':'redacted'
+        }
+    },
+    {
+        arrayFilters:[
+            {
+                'eachCheckup.name':'Dr Chua'
+            }
+        ]
+    }
+)
+```
+
+Update all Dr. Chua's checkups so that its diagnosis is 'redacted'
+
+db.animals.updateMany(
+    {
+       
+    },
+    {
+        $set:{
+            'checkups.$[eachCheckup].diagnosis':'redacted'
+        }
+    },
+    {
+        arrayFilters:[
+            {
+                'eachCheckup.name':'Dr Chua'
+            }
+        ]
+    }
+)
