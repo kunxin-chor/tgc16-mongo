@@ -25,32 +25,50 @@ async function main() {
 
     // SETUP ROUTES
     app.get('/', async function (req, res) {
-        res.send("show all food records")
+        const db = getDB();
+        let allFood = await db.collection('food_records').find({}).toArray();
+        res.render('all_food.hbs',{
+            'foodRecords':allFood
+        })
     })
 
-    app.get('/food/add', function(req,res){
+    app.get('/food/add', async function(req,res){
+        // read in all the possible tags
+        // const db = getDB();
+        // let allTags = await db.collection('all_tags').find().toArray();
         res.render('add_food.hbs',{
-
+            // 'tags': allTags
         })
     })
 
     app.post('/food/add', async function(req,res){
         // step 1. extract info from form
-        let foodName = req.body.foodName;
-        let calories = req.body.calories;
-        let tags = req.body.tags;
-        let tagArray = tags.split(',');
+        // let foodName = req.body.foodName;
+        // let calories = req.body.calories;
+        // let tags = req.body.tags;
+        let { foodName, calories, tags} = req.body;  // <-- object destructuring
+       
+        // convert tags to be an array if it is not an array
+        let tagArray = [];
+        // check if tags is not undefined or null or empty string (meaning the user selects at least one checkbox)
+        if (tags) {
+            // check if tags is an array
+            if (Array.isArray(tags)) {
+                tagArray = tags;
+            } else {
+                // it means that tags is a single string
+                // so put it into an array as the only element
+                tagArray = [tags]
+            }
+        }
 
-        // step 2. create the new document
-        let foodDocument = {
+        // step 2 and 3. insert in the collection
+        let db = getDB();
+        await db.collection('food_records').insertOne({
             'name': foodName,
             'calories': calories,
             'tags': tagArray
-        }
-
-        // step 3. insert in the collection
-        let db = getDB();
-        await db.collection('food_records').insertOne(foodDocument);
+        });
 
         res.send("form recieved");
     })
