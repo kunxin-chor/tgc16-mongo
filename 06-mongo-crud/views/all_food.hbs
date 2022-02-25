@@ -8,6 +8,7 @@
             <th>Name</th>
             <th>Calories</th>
             <th>Tags</th>
+            <th></th>
         </tr>
 
     </thead>
@@ -18,6 +19,7 @@
             <td>{{this.name}}</td>
             <td>{{this.calories}}</td>
             <td>{{this.tags}}</td>
+            <td><a href="/food/{{this._id}}/edit" class="btn btn-primary btn-sm">Edit</a></td>
         </tr>
     {{/each}}
 </table>

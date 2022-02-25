@@ -7,6 +7,13 @@ const {
     getDB
 } = require('./MongoUtil');
 
+const ObjectId = require('mongodb').ObjectId;
+const helpers = require('handlebars-helpers')(
+    {
+        'handlebars': hbs.handlebars
+    }
+)
+
 const app = express();
 app.set('view engine', 'hbs');
 
@@ -71,6 +78,59 @@ async function main() {
         });
 
         res.send("form recieved");
+    })
+
+    app.get('/food/:food_id/edit', async function(req,res){
+        // get the record with the id in the parameter
+        let foodRecord = await getDB().collection('food_records').findOne({
+            '_id': ObjectId(req.params.food_id)
+        })
+
+        res.render('edit_food.hbs',{
+            'food':foodRecord
+        })
+    } )
+
+    app.post('/food/:food_id/edit', async function(req,res){
+
+        let tags = req.body.tags || [];
+        tags = Array.isArray(tags) ? tags : [tags];
+
+        let foodDocument = {
+            'name': req.body.foodName,
+            'calories':req.body.calories,
+            
+        }
+
+        await getDB().collection('food_records').updateOne({
+            '_id': ObjectId(req.params.food_id)
+        },{
+            '$set': {
+                'name': foodDocument.name,
+                'calories': foodDocument.calories,
+                'tags': foodDocument.tags
+            }
+        })
+
+        //    await getDB().collection('food_records').updateOne({
+        //     '_id': ObjectId(req.params.food_id)
+        // },{
+        //     '$set': {
+        //         ...foodDocument  // spread operator
+        //     }
+        // })
+
+        // await getDB().collection('food_records').updateOne({
+        //     '_id': ObjectId(req.params.food_id)
+        // },{
+        //     '$set': {
+        //         ...foodDocument,  // spread operator
+        //         'tags': tags // replace the tags from foodDocument with whatever tags is
+        //     }
+        // })
+
+
+        res.redirect('/')
     })
 }
 
