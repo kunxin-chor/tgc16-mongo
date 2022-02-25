@@ -1,0 +1,22 @@
+{{#extends "base"}}
+
+{{#block "content"}}
+<h1>Add new food</h1>
+<form method="POST">
+    <div>
+        <label>Food Name:</label>
+        <input type="text" class="form-control" id="name" name="foodName">
+    </div>
+    <div>
+        <label>Calories</label>
+        <input type="text" class="form-control" id="calories" name="calories">
+    </div>
+    <div>
+        <label>Tags</label>
+        <input type="text" placeholder="Please seperate each tag with a comma" class="form-control" name="tags"/>
+    </div>
+    <input type="submit" value="Submit" class="btn btn-primary mt-3"/>
+</form>
+{{/block}}
+
+{{/extends}}
