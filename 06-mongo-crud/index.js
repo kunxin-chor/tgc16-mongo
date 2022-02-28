@@ -25,6 +25,8 @@ app.use(express.urlencoded({
     extended:false
 }));
 
+const COLLECTION_NAME = "food_records";
+
 async function main() {
     // connect to the mongodb
     // first arg of the MongoClient.connect() is the URI (or your connection string)
@@ -33,7 +35,7 @@ async function main() {
     // SETUP ROUTES
     app.get('/', async function (req, res) {
         const db = getDB();
-        let allFood = await db.collection('food_records').find({}).toArray();
+        let allFood = await db.collection(COLLECTION_NAME).find({}).toArray();
         res.render('all_food.hbs',{
             'foodRecords':allFood
         })
@@ -71,7 +73,7 @@ async function main() {
 
         // step 2 and 3. insert in the collection
         let db = getDB();
-        await db.collection('food_records').insertOne({
+        await db.collection(COLLECTION_NAME).insertOne({
             'name': foodName,
             'calories': calories,
             'tags': tagArray
@@ -82,7 +84,7 @@ async function main() {
 
     app.get('/food/:food_id/edit', async function(req,res){
         // get the record with the id in the parameter
-        let foodRecord = await getDB().collection('food_records').findOne({
+        let foodRecord = await getDB().collection(COLLECTION_NAME).findOne({
             '_id': ObjectId(req.params.food_id)
         })
 
@@ -142,7 +144,7 @@ async function main() {
 
     
     app.get('/food/:food_id/delete', async function(req,res){
-        let foodRecord = await getDB().collection('food_records').findOne({
+        let foodRecord = await getDB().collection(COLLECTION_NAME).findOne({
             '_id': ObjectId(req.params.food_id)
         })
         res.render('delete_product.hbs',{
@@ -152,7 +154,7 @@ async function main() {
 
     app.post('/food/:food_id/delete', async function(req,res){
         let food_id = req.params.food_id;
-        await getDB().collection('food_records').deleteOne({
+        await getDB().collection(COLLECTION_NAME).deleteOne({
             '_id':ObjectId(food_id)
         })
         res.redirect('/')
