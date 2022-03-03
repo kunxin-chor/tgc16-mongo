@@ -25,6 +25,8 @@ app.use(express.urlencoded({
     extended:false
 }));
 
+// defining COLLECTION_NAME so that we can change
+// the collection name easier next time
 const COLLECTION_NAME = "food_records";
 
 async function main() {
@@ -35,7 +37,10 @@ async function main() {
     // SETUP ROUTES
     app.get('/', async function (req, res) {
         const db = getDB();
-        let allFood = await db.collection(COLLECTION_NAME).find({}).toArray();
+        // if the criteria object is empty then
+        // it means to fetch all the records from the collectrion
+        let allFood = await db.collection(COLLECTION_NAME).
+                        find({}).toArray();
         res.render('all_food.hbs',{
             'foodRecords':allFood
         })
@@ -79,7 +84,7 @@ async function main() {
             'tags': tagArray
         });
 
-        res.send("form recieved");
+        res.redirect('/');
     })
 
     app.get('/food/:food_id/edit', async function(req,res){
@@ -158,6 +163,55 @@ async function main() {
             '_id':ObjectId(food_id)
         })
         res.redirect('/')
+    })
+
+    // 
+    app.get('/food/:food_id/notes/add', async function(req,res){
+        let db = getDB();
+        let foodRecord = await db.collection(COLLECTION_NAME)
+                                 .findOne({
+                                    '_id': ObjectId(req.params.food_id)
+                                 })
+        res.render('add_note.hbs',{
+            'food':foodRecord
+        })
+    })
+
+    app.post('/food/:food_id/notes/add', async function(req,res){
+        let foodRecordId = req.params.food_id;
+        let noteContent = req.body.note_content;
+        await getDB().collection(COLLECTION_NAME)
+                    .updateOne({
+                        "_id":ObjectId(foodRecordId)
+                    },{
+                        '$push':{
+                            'notes':{
+                                '_id': new ObjectId(),
+                                'content': noteContent,
+                                'email': req.body.email
+                                
+                            }
+                        }
+                    })
+        // always send a response from your route
+        res.redirect('/')
+    })
+
+    app.get('/food/:food_id/notes', async function(req,res){
+        let foodRecord = await getDB()
+                            .collection(COLLECTION_NAME)
+                            .findOne({
+                                '_id':ObjectId(req.params.food_id)
+                            },{
+                                'projection':{
+                                    'name':1,
+                                    'notes':1
+                                }
+                            })
+                        
+        res.render('all_notes.hbs',{
+            'foodRecord':foodRecord
+        })
     })
 }
 
