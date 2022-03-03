@@ -25,6 +25,28 @@ app.use(express.urlencoded({
     extended:false
 }));
 
+// This function, given food_id and note_id, get the note specified
+// food_id is the id of the food record
+// note_id is the id of the note
+async function getNote(food_id, note_id){
+    let db = getDB();
+    let foodRecord = await db.collection(COLLECTION_NAME)
+                            .findOne({
+                                '_id':ObjectId(food_id)
+                            },{
+                                'projection':{
+                                    'name':1,
+                                    'notes': {
+                                        /* project one element from the notes array */
+                                        '$elemMatch':{
+                                            '_id':ObjectId(note_id)
+                                        }
+                                    },
+                                }
+                            })
+    return foodRecord;
+}
+
 // defining COLLECTION_NAME so that we can change
 // the collection name easier next time
 const COLLECTION_NAME = "food_records";
@@ -187,8 +209,7 @@ async function main() {
                         '$push':{
                             'notes':{
                                 '_id': new ObjectId(),
-                                'content': noteContent,
-                                'email': req.body.email
+                                'content': noteContent
                                 
                             }
                         }
@@ -212,6 +233,51 @@ async function main() {
         res.render('all_notes.hbs',{
             'foodRecord':foodRecord
         })
+    })
+
+    app.get('/food/:food_id/notes/:note_id', async function(req,res){
+        let foodRecord = await getNote(req.params.food_id, req.params.note_id);
+        // res.json(foodRecord.notes[0]);
+        res.render('edit_note.hbs', {
+            'foodRecord': foodRecord
+        })
+    })
+
+    await app.post('/food/:food_id/notes/:note_id', async function(req,res){
+        let db = getDB();
+        await db.collection(COLLECTION_NAME).updateOne({
+            '_id':ObjectId(req.params.food_id),
+            'notes._id':ObjectId(req.params.note_id)
+        },{
+            '$set':{
+                'notes.$.content': req.body.note_content
+            }
+        })
+
+        res.redirect(`/food/${req.params.food_id}/notes`)
+    })
+
+    app.get('/food/:food_id/notes/:note_id/delete', async function(req,res){
+        let foodRecord = await getNote(req.params.food_id, req.params.note_id);
+        res.render('delete_note.hbs',{
+            'foodRecord': foodRecord
+        })
+
+    })
+
+    app.post('/food/:food_id/notes/:note_id/delete', async function(req,res){
+        let db = getDB();
+        await db.collection(COLLECTION_NAME)
+                .updateOne({
+                    '_id': ObjectId(req.params.food_id)
+                },{
+                    '$pull':{
+                        'notes':{
+                            '_id':ObjectId(req.params.note_id)
+                        }
+                    }
+                })
+        res.redirect(`/food/${req.params.food_id}/notes`)
     })
 }
 
