@@ -207,7 +207,7 @@ db.animals.updateOne(
 ```
 
 Update all Dr. Chua's checkups so that its diagnosis is 'redacted'
-
+```
 db.animals.updateMany(
     {
        
@@ -225,3 +225,4 @@ db.animals.updateMany(
         ]
     }
 )
+```
